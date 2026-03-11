@@ -444,17 +444,6 @@ header {
 </head>
 <body>
 
-<!-- API Modal -->
-<div class="modal-overlay" id="apiModal">
-  <div class="modal">
-    <div class="modal-title">🖊 配置 API 密钥</div>
-    <div class="modal-desc">文心写作练习使用 Anthropic Claude API 提供 AI 反馈。<br>你的密钥仅保存在本地浏览器中，不会上传到任何地方。</div>
-    <input class="modal-input" type="password" id="apiKeyInput" placeholder="sk-ant-...">
-    <div class="modal-note">前往 <strong>console.anthropic.com</strong> → API Keys 获取密钥</div>
-    <button class="btn btn-primary" style="width:100%" onclick="saveApiKey()">保存并开始练习</button>
-  </div>
-</div>
-
 <!-- Header -->
 <header>
   <div class="logo">
@@ -654,7 +643,7 @@ function getToday() {
 // ── INIT ──
 window.addEventListener('load', () => {
   if (!apiKey) {
-    document.getElementById('apiModal').classList.add('open');
+    
   }
   updateStreak();
   renderCalendar();
@@ -665,16 +654,6 @@ window.addEventListener('load', () => {
   todayCheckedIn = log.some(e => e.date === getToday());
 });
 
-function saveApiKey() {
-  const k = document.getElementById('apiKeyInput').value.trim();
-  if (!k || !k.startsWith('sk-ant-')) {
-    alert('请输入有效的 Anthropic API 密钥（以 sk-ant- 开头）');
-    return;
-  }
-  apiKey = k;
-  localStorage.setItem('wenxin_api_key', k);
-  document.getElementById('apiModal').classList.remove('open');
-}
 
 // ── TABS ──
 function switchTab(name) {
@@ -1041,29 +1020,15 @@ function renderCollection() {
 
 // ── API CALL ──
 async function callAPI(userMsg, systemMsg, history) {
-  const key = apiKey || localStorage.getItem('wenxin_api_key');
-  if (!key) { document.getElementById('apiModal').classList.add('open'); throw new Error('需要 API 密钥'); }
-
-  const messages = history || [{ role: 'user', content: userMsg }];
-
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+  const prompt = history ? history[history.length - 1].content : userMsg;
+  const resp = await fetch('https://anzhi.app.n8n.cloud/webhook/writing-coach', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1500,
-      system: systemMsg || '你是温暖有经验的中文语文老师。',
-      messages
-    })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, system: systemMsg || '你是温暖的中文语文老师。' })
   });
-
   const data = await resp.json();
-  if (data.error) throw new Error(data.error.message);
-  return data.content?.[0]?.text || '';
+  if (!data.result) throw new Error(JSON.stringify(data));
+  return data.result;
 }
 
 // Char count listener
