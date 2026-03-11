@@ -764,7 +764,10 @@ ${passage}
     }
 
   } catch(e) {
-    placeholder.innerHTML = '<div style="color:var(--muted);font-size:14px">问题生成失败，可以直接进行仿写练习。</div>';
+    placeholder.innerHTML = `<div style="color:#c0392b;font-size:13px;background:#fdf0ee;padding:12px;border-radius:8px;border-left:3px solid #c0392b">
+      ⚠️ 生成失败：${e.message}<br>
+      <span style="color:#888;font-size:12px">请检查 API Key 是否正确，或刷新页面重试。</span>
+    </div>`;
   }
 }
 
@@ -839,7 +842,10 @@ ${writing}
     renderFeedback(fb);
   } catch(e) {
     document.getElementById('feedbackArea').classList.add('visible');
-    document.getElementById('feedbackBody').innerHTML = `<div class="feedback-text" style="white-space:pre-wrap">${e.message}</div>`;
+    document.getElementById('feedbackBody').innerHTML = `<div style="color:#c0392b;font-size:13px;background:#fdf0ee;padding:12px;border-radius:8px;border-left:3px solid #c0392b">
+      ⚠️ 反馈生成失败：${e.message}<br>
+      <span style="color:#888;font-size:12px">请检查 API Key 是否正确，或刷新页面重试。</span>
+    </div>`;
   }
 
   document.getElementById('loadingIndicator').style.display = 'none';
